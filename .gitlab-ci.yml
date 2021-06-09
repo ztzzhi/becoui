@@ -1,0 +1,133 @@
+image: docker-reg.devops.xiaohongshu.com/fe/fe-ci:$FE_CI_IMAGE_LATEST
+
+variables:
+  BROWSER_OUTPUT_FOLDER: "./public"
+  REMOTES_FOLDER: "/data/formula-static/$CI_PROJECT_NAME"
+
+before_script:
+  - node -v
+  - formula -V
+  - npm i
+
+stages:
+  - test
+  - build
+  - deploy-static
+  - deploy-image
+  - dockwalloper
+
+test:
+  stage: test
+  script:
+    - formula lint -p
+    - formula test
+  cache:
+    untracked: true
+    paths:
+      - node_modules/
+
+build:feature:
+  stage: build
+  before_script:
+  script:
+    - formula build -e test
+  cache:
+    untracked: true
+    paths:
+      - node_modules/
+  artifacts:
+    untracked: true
+    expire_in: 10 mins
+    paths:
+      - $BROWSER_OUTPUT_FOLDER
+  only:
+    - branches
+  except:
+    - develop
+    - master
+  allow_failure: false
+
+build:test:
+  stage: build
+  before_script:
+  script:
+    - formula build -e test
+  cache:
+    untracked: true
+    paths:
+      - node_modules/
+  artifacts:
+    untracked: true
+    expire_in: 10 mins
+    paths:
+      - $BROWSER_OUTPUT_FOLDER
+  only:
+    - develop
+
+build:production:
+  stage: build
+  script:
+    - formula build
+  cache:
+    untracked: true
+    paths:
+      - node_modules/
+  artifacts:
+    untracked: true
+    expire_in: 10 mins
+    paths:
+      - $BROWSER_OUTPUT_FOLDER
+  only:
+    - /^v\d+\.\d+\.\d+$/
+  except:
+    - branches
+
+deploy:static:
+  stage: deploy-static
+  script:
+    - formula deploy -s $BROWSER_OUTPUT_FOLDER -d $REMOTES_FOLDER
+  only:
+    - /^v\d+\.\d+\.\d+$/
+  except:
+    - branches
+
+deploy:image:
+  stage: deploy-image
+  image: docker-reg.devops.xiaohongshu.com/library/docker:latest
+  services:
+    - docker-reg.devops.xiaohongshu.com/library/docker:dind
+  before_script:
+    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_NAME
+  script:
+    - docker build -t $REGISTRY_NAME/$CI_PROJECT_PATH:${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA:0:8} .
+    - docker push $REGISTRY_NAME/$CI_PROJECT_PATH:${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA:0:8}
+  only:
+    - branches
+    - /^v\d+\.\d+\.\d+$/
+  except:
+    - master
+
+dockwalloper:tag:
+  stage: dockwalloper
+  image: docker-reg.devops.xiaohongshu.com/fe/dockwalloper:latest
+  before_script:
+    - node -v
+    - dockwalloper -v
+  script:
+    - dockwalloper carry -p ./ -d $CI_PROJECT_URL -r $CI_COMMIT_REF_NAME -u $FE_CI_WIKI_GROUP -w $FE_CI_WIKI_PASSWORD
+  only:
+    - /^v\d+\.\d+\.\d+$/
+    - /^v\d+\.\d+\.\d+-\d+$/
+
+dockwalloper:manual:
+  stage: dockwalloper
+  image: docker-reg.devops.xiaohongshu.com/fe/dockwalloper:latest
+  before_script:
+    - node -v
+    - dockwalloper -v
+  script:
+    - dockwalloper carry -p ./ -d $CI_PROJECT_URL -r $CI_COMMIT_REF_NAME -u $FE_CI_WIKI_GROUP -w $FE_CI_WIKI_PASSWORD
+  when:
+      manual
+  only:
+    - branches

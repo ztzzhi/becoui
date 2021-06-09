@@ -1,0 +1,37 @@
+.row{
+  display flex
+  flex-flow row wrap
+}
+
+for index in (1..12)
+  .col-xs-{index}{
+    display flex
+    flex 0 0 (index/12)*100%
+    padding-right 20px
+  }
+
+@media (min-width: 1200px) 
+  for index in (1..12)
+    .col-sm-{index}{
+      display flex
+      flex 0 0 (index/12)*100%
+      padding-right 20px
+    }
+
+
+@media (min-width: 1440px) 
+  for index in (1..12)
+    .col-md-{index}{
+      display flex
+      flex 0 0 (index/12)*100%
+      padding-right 20px
+    }
+
+
+@media (min-width: 1920px) 
+  for index in (1..12)
+    .col-lg-{index}{
+      display flex
+      flex 0 0 (index/12)*100%
+      padding-right 20px
+    }

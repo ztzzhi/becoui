@@ -1,0 +1,30 @@
+{
+  "name": "becoui",
+  "version": "0.0.22",
+  "description": "",
+  "scripts": {
+    "preinstall": "[ -d ./.hooks ] && (git config --add core.hooksPath ./.hooks) || ([ -d ./.git ] && formula githooks || echo 'Please run git init')",
+    "dev": "formula dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@code.devops.xiaohongshu.com:fe/becoui.git"
+  },
+  "author": "muxia <muxia@xiaohongshu.com>",
+  "license": "ISC",
+  "private": true,
+  "dependencies": {
+    "@types/mockjs": "^1.0.3",
+    "@xhs/launcher": "^3.1.2",
+    "@xhs/launcher-plugin-anti-spam": "^1.3.4",
+    "@xhs/launcher-plugin-auth": "^2.0.0-0",
+    "@xhs/launcher-plugin-eaglet": "^4.0.4",
+    "@xhs/ozone-share": "^0.17.2",
+    "@xhs/protobuf-apm-tracker": "^2.9.0",
+    "@xhs/yam-beer": "3.14.2-next.184",
+    "dayjs": "^1.10.5",
+    "lodash": "^4.17.21",
+    "mockjs": "^1.1.0",
+    "vue3-echarts": "^1.0.3"
+  }
+}
